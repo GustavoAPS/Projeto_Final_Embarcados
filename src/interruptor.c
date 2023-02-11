@@ -9,7 +9,7 @@
 
 #define PIN_PHOTO_INTERRUPTOR 15  // GPIO15
 
-void app_main()
+void run3()
 {
     int state = 0;
     ESP_LOGI("Photo-interrupter", "Starting...");

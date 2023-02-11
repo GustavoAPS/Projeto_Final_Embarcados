@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "wifi.h": "c",
+        "cjson.h": "c",
+        "dns.h": "c",
+        "string.h": "c",
+        "esp_system.h": "c",
+        "esp_event.h": "c"
+    }
+}

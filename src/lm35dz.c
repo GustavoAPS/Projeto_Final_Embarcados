@@ -4,6 +4,7 @@
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "mqtt.h"
 
 #define DEFAULT_VREF    1100        //Use adc2_vref_to_gpio() to obtain a better estimate
 #define NO_OF_SAMPLES   64          //Multisampling
@@ -42,7 +43,7 @@ void print_char_val_type(esp_adc_cal_value_t val_type)
     }
 }
 
-void read_lm35dz()
+float read_lm35dz()
 {
     //Multisampling
     uint32_t adc_reading = 0;
@@ -60,10 +61,10 @@ void read_lm35dz()
     //Convert adc_reading to voltage in mV
     uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
     float temp = (voltage/1000.0)*100;
-    printf("Temperature = %f C\n", temp);
+    return temp;
 }
 
-void app_main()
+void routine_lm35c()
 {
     //Configure ADC
     if (unit == ADC_UNIT_1) {
@@ -79,8 +80,12 @@ void app_main()
     print_char_val_type(val_type);
 
     //Continuously sample ADC1
+    float temperatura;
+    char mensagem[50];
     while (1) {
-        read_lm35dz();
+        temperatura = read_lm35dz();
+        sprintf(mensagem, "{\"Temperatura2\": %f}", temperatura);
+        mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
