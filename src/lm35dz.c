@@ -67,6 +67,7 @@ float read_lm35dz()
 void routine_lm35c()
 {
     //Configure ADC
+    
     if (unit == ADC_UNIT_1) {
         adc1_config_width(ADC_WIDTH_BIT_12);
         adc1_config_channel_atten(channel, atten);
@@ -79,13 +80,12 @@ void routine_lm35c()
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(unit, atten, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars);
     print_char_val_type(val_type);
 
-    //Continuously sample ADC1
+    //Continuously sample ADC1 
     float temperatura;
     char mensagem[50];
-    while (1) {
-        temperatura = read_lm35dz();
-        sprintf(mensagem, "{\"Temperatura2\": %f}", temperatura);
-        mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
+    temperatura = read_lm35dz();
+    sprintf(mensagem, "{\"temperatura2\": %f}", temperatura);
+    mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
+        //vTaskDelay(pdMS_TO_TICKS(1000));
+    
 }

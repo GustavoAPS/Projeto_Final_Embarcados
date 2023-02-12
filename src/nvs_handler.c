@@ -48,7 +48,7 @@ int32_t le_valor_nvs(char *chave)
         switch (res)
         {
         case ESP_OK:
-            printf("Valor armazenado: %d\n", valor);
+            printf("Valor armazenado: %ld\n", valor);
             break;
         case ESP_ERR_NOT_FOUND:
             ESP_LOGE("NVS", "Valor não encontrado");

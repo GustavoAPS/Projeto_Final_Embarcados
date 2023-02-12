@@ -14,7 +14,7 @@
 
 #define BUTTON 0
 
-extern xSemaphoreHandle conexaoWifiSemaphore;
+extern SemaphoreHandle_t conexaoWifiSemaphore;
 
 void button_routine()
 {

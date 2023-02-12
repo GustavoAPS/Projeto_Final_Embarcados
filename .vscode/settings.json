@@ -5,6 +5,7 @@
         "dns.h": "c",
         "string.h": "c",
         "esp_system.h": "c",
-        "esp_event.h": "c"
+        "esp_event.h": "c",
+        "task.h": "c"
     }
 }

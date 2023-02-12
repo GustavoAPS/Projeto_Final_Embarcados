@@ -11,6 +11,9 @@
 #include "mqtt.h"
 #include "lm35.h"
 #include "dht11.h"
+#include "interruptor.h"
+#include "led.h"
+
 
 SemaphoreHandle_t conexaoWifiSemaphore;
 SemaphoreHandle_t conexaoMQTTSemaphore;
@@ -31,8 +34,17 @@ void trataComunicacaoComServidor(void * params)
 {
   if(xSemaphoreTake(conexaoMQTTSemaphore, portMAX_DELAY))
   {
-     xTaskCreate(&routine_lm35c, "Rotina do lm35c", 4096, NULL, 1, NULL);
-     //xTaskCreate(&touch_routine, "Rotina do touch", 4096, NULL, 1, NULL);
+    while (1)
+    {
+      touch_routine();
+      routine_lm35c();
+      rotina_interruptor();
+      led_routine();
+      DHT11_routine();
+      vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+    
+     //xTaskCreate(&routine_lm35c, "Rotina do lm35c", 4096, NULL, 1, NULL);
      //xTaskCreate(&DHT11_routine, "Rotina do dht11", 4096, NULL, 1, NULL);
   }
 }

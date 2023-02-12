@@ -19,11 +19,11 @@ void touch_routine()
     io_conf.pull_up_en = 0;
     gpio_config(&io_conf);
 
-    while(1) {
-        int touched = gpio_get_level(TOUCH_IO);
-        printf("Touched: %d\n", touched);
-        sprintf(mensagem, "{\"touch\": %d}", touched);
-        mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
-        vTaskDelay(pdMS_TO_TICKS(300));
-    }
+    
+    int touched = gpio_get_level(TOUCH_IO);
+    //printf("Touched: %d\n", touched);
+    sprintf(mensagem, "{\"touch\": %d}", touched);
+    mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
+    vTaskDelay(pdMS_TO_TICKS(300));
+    
 }
