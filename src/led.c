@@ -14,10 +14,15 @@ void led_routine()
   gpio_set_direction(LED, GPIO_MODE_OUTPUT);
 
   int estado = 0;
-  char mensagem[50];
-  gpio_set_level(LED, estado);
-  estado = !estado;
-  sprintf(mensagem, "{\"led\": %d}", estado);
-  mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
+  char mensagem[20];
+  while (true){
+    gpio_set_level(LED, estado);
+    estado = !estado;
+    sprintf(mensagem, "{\"led\": %d}", estado);
+    mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+  }
+  
 
 }

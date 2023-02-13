@@ -13,7 +13,7 @@
 #include "dht11.h"
 #include "interruptor.h"
 #include "led.h"
-
+#include "led_dual.h"
 
 SemaphoreHandle_t conexaoWifiSemaphore;
 SemaphoreHandle_t conexaoMQTTSemaphore;
@@ -34,12 +34,13 @@ void trataComunicacaoComServidor(void * params)
 {
   if(xSemaphoreTake(conexaoMQTTSemaphore, portMAX_DELAY))
   {
+    xTaskCreate(led_routine, "Rotina do led", 2048, NULL, 10, NULL);
+    xTaskCreate(&led_dual_routine, "Rotina do led2", 2048, NULL, 11, NULL);
     while (1)
     {
       touch_routine();
       routine_lm35c();
       rotina_interruptor();
-      led_routine();
       DHT11_routine();
       vTaskDelay(pdMS_TO_TICKS(1000));
     }
