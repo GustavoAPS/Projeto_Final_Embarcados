@@ -83,9 +83,11 @@ void routine_lm35c()
     //Continuously sample ADC1 
     float temperatura;
     char mensagem[50];
-    temperatura = read_lm35dz();
-    sprintf(mensagem, "{\"temperatura2\": %f}", temperatura);
-    mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
-        //vTaskDelay(pdMS_TO_TICKS(1000));
+    while(1){
+        temperatura = read_lm35dz();
+        sprintf(mensagem, "{\"temperatura2\": %f}", temperatura);
+        mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
     
 }

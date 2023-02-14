@@ -6,6 +6,7 @@
         "string.h": "c",
         "esp_system.h": "c",
         "esp_event.h": "c",
-        "task.h": "c"
+        "task.h": "c",
+        "uart.h": "c"
     }
 }

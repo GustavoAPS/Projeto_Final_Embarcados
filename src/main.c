@@ -12,8 +12,9 @@
 #include "lm35.h"
 #include "dht11.h"
 #include "interruptor.h"
-#include "led.h"
-#include "led_dual.h"
+#include "nvs_handler.h"
+
+#include "button.h"
 
 SemaphoreHandle_t conexaoWifiSemaphore;
 SemaphoreHandle_t conexaoMQTTSemaphore;
@@ -34,14 +35,14 @@ void trataComunicacaoComServidor(void * params)
 {
   if(xSemaphoreTake(conexaoMQTTSemaphore, portMAX_DELAY))
   {
-    xTaskCreate(led_routine, "Rotina do led", 2048, NULL, 10, NULL);
-    xTaskCreate(&led_dual_routine, "Rotina do led2", 2048, NULL, 11, NULL);
+    xTaskCreate(&DHT11_routine, "Rotina do temperatura1", 2048, NULL, 11, NULL);
+    xTaskCreate(&routine_lm35c, "Rotina do temperatura2", 2048, NULL, 11, NULL);
+    xTaskCreate(&button_routine, "Rotina do led2", 2048, NULL, 11, NULL);
+    xTaskCreate(&touch_routine, "Rotina do touch", 2048, NULL, 11, NULL);
+
     while (1)
     {
-      touch_routine();
-      routine_lm35c();
       rotina_interruptor();
-      DHT11_routine();
       vTaskDelay(pdMS_TO_TICKS(1000));
     }
     
@@ -52,16 +53,16 @@ void trataComunicacaoComServidor(void * params)
 
 void app_main(void)
 {
-    // Inicializa o NVS
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-      ESP_ERROR_CHECK(nvs_flash_erase());
-      ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
-    
+    inicia_nvs();
+    float temperatura = 0;
+    float umidade = 0;
+    temperatura = le_valor_nvs("Temperatura");
+    umidade = le_valor_nvs("Umidade");
+
+
     conexaoWifiSemaphore = xSemaphoreCreateBinary();
     conexaoMQTTSemaphore = xSemaphoreCreateBinary();
+
     wifi_start();
 
     xTaskCreate(&conectadoWifi,  "Conexão ao MQTT", 4096, NULL, 1, NULL);

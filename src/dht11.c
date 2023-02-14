@@ -148,25 +148,32 @@ struct dht11_reading DHT11_read()
 void DHT11_routine()
 {
     char mensagem[50];
-    float temp_lida = DHT11_read().temperature;
-    float umid_lida = DHT11_read().humidity;
-
-    if (temp_lida != -1 && umid_lida != -1)
+    while (true)
     {
-        temperatura = temp_lida;
-        umidade = umid_lida;
+        float temp_lida = DHT11_read().temperature;
+        float umid_lida = DHT11_read().humidity;
+
+        if (temp_lida != -1 && umid_lida != -1)
+        {
+            temperatura = temp_lida;
+            umidade = umid_lida;
+        }
+
+        printf("Temperatura: %.2f\n", temperatura);
+        printf("Umidade: %.2f\n", umidade);
+        
+        sprintf(mensagem, "{\"temperatura1\": %f}", temperatura);
+        mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
+        
+        grava_valor_nvs("Temperatura", temperatura);
+
+        sprintf(mensagem, "{\"Umidade\": %f}", umidade);
+        mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
+
+        grava_valor_nvs("Umidade", umidade);
+
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
-
-    printf("Temperatura: %.2f\n", temperatura);
-    printf("Umidade: %.2f\n", umidade);
-
-    sprintf(mensagem, "{\"temperatura1\": %f}", temperatura);
-    mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
-    grava_valor_nvs("Temperatura", temperatura);
-
-    sprintf(mensagem, "{\"Umidade\": %f}", umidade);
-    mqtt_envia_mensagem("v1/devices/me/telemetry", mensagem);
-    grava_valor_nvs("Umidade", umidade);
-
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    
+    
 }
