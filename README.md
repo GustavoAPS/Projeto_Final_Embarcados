@@ -9,77 +9,65 @@
 | Gustavo Afonso Pires Severo   | 17/0034992 |
 
 
-## Contexto do projeto
+## 1. Contexto do projeto
 
 Este trabalho tem por objetivo a simulação de uma serra circular indústrial, abstraida por meio de sensores e atuadores baseados nos microcontroladores ESP32 
 interconectados via Wifi através do protocolo MQTT. O microcontrolador ESP32 controla a aquisição de dados de sensores, botões e chaves e aciona 
 saídas do led da placa e do módulo de led bicolor além de enviar os dados para o Dashboard que apresenta os dados no navegador do usuário, toda a comunicação é feita via rede Wifi.
 
 
-## 2. Componentes do Sistema
+## 2. Regras do sistema
 
-(COLOCAR FOTO DE CADA COISA)
+Para as regras de funcionamento da serra circular ficaram estabelecidas as seguintes regras:
+
+- O motor da serra é simulado por um Led Bi-color, para a cor verde a serrra funciona em estado normal e vermelho em estado de alta rotação.
+- O botão boot da Esp32 simula um desligamento da serra, que só deve ser possível se esta não estiver em alta rotação.
+- Para a serra entrar em modo de alta rotação, o sensor photo interruptor deve ser acionado.
+- O sensor de touch liga o Led azul da Esp 32, indicando que a serra está sendo manuseada.
+- O PWM é simulado por meio dos leds, indicando a rotação do motor da serra.
 
 
-O **Servidor Central Thingsboard** será composto por:
-1. Serviço disponibilizado pelo Laboratório de Software (Lappis);
-2. Disponibiliza um Broker MQTT;
-3. Serviço de Cadastro, registro e monitoramento de dispositivos;
-4. Serviço de criação de Dashboards.
+## 3. Implementação do sistema
 
-**Cliente ESP32 distribuído - Energia**:
-1. Dev Kit ESP32;
-2. Botão (Presente na placa);
-3. LED (Presente na placa).
-4. Sensor a ser escolhido pelos alunos;
+- O código da ESP32 foi desenvolvido em C utilizando o framework do PlatformIO no VsCode.
+- A interconexão entre os dispositivos foi feita através do Protocolo MQTT via rede Ethernet/Wifi. 
+- A rede MQTT foi coordenada por um Broker disponível no serviço junto ao Thingsboard.
+- Todas as mensagens via MQTT foram formatadas no formato JSON, como mostrado abaixo.
+    - Telemetria: `v1/devices/me/telemetry`
+    - Atributos: `v1/devices/me/attributes`
+- O envio e recebimento de comandos deverá foi realizado através de **Remote Procedure Calls (RPC)**.
+- Quando inciada pela primeira vez a ESP32:  
+    - Inicializa o serviço MQTT e conecta ao broker com o token de acesso do dispositivo.  
+    - Se inscreve no tópico `v1/devices/me/rpc/request/+` para receber comandos remotos.
+    - Envia telemetria e atributos pelos respectivos tópicos da API.  
+- Armazenar o estado dos atributos do sensor DHT11 caso de reinicio do dispositivo por falta de energia. A informação da ultima leitura fica armzenada na memória não volátil (NVS).
+- Realizar telemetria dos sensores a cada 1/2 segundo;
+- Simula o PWM do motor da serra por meio do LED bicolor usando o mesmo princípio.
 
-**Cliente ESP32 distribuído - Bateria**:
-1. Dev Kit ESP32;
-2. Botão (Presente na placa);
-3. LED (Presente na placa).
+#### Esp 32
 
-## 3. Conexões entre os módulos do sistema
+<img src=img/esp32.jpg  width="300" height="300">
 
-1. A interconexão entre os dispositivos será toda realizada através do Protocolo MQTT via rede Ethernet/Wifi. 
-2. A rede MQTT será coordenada por um Broker disponível no serviço junto ao Thingsboard;
-3. Todas as mensagens via MQTT devem estar no formato JSON;
-4. **ESP32**: o botão e o LED a serem usados são os dispositivos já integrados no próprio kit de desenvolimento (Botão = GPIO 0 / LED = GPIO 2);
-5. **ESP32**: um conjunto de sensores (analógicos e/ou digitais) serão disponibilizados aos alunos cuja telemetria deve ser implementada e enviada ao Thingsboard;
-6. **Servidor Central Thingsboard**: serão criados usuários para cada aluno/grupo que ficarão reposnsáveis por criar os dispositivos e dashboards necessários para a implementação do trabalho;
+#### Sensor Temperatura/Umidade DHT11
 
-## 4. Requisitos
+<img src=img/dht11.jpg  width="300" height="300">
 
-Abaixo estão detalhados os requisitos de cada um dos componentes do sistema.
+#### LED Bi-Color
 
-#### **Servidor Central Thingsboard**:
-1. Serão criadas as contas/usuários para cada aluno/grupo;
-2. Cada aluno/grupo será responsável por cadastrar seus dispositivos e gerar o token de acesso;
-3. Cada aluno/grupo será responsável por criar um dashboard que apresente dados de telemetria e dos atributos dos dispositivos, bem como comandos em tela para acionamento de atuadores (elementos controlados) de cada dispositivos distribuído;
+<img src=img/led_bicolor.png  width="300" height="300">
 
-Todo o envio de Telemetria e Atributos e recebimento de comandos para o Thingsboard é documentado da API de referência: [ThingsBoard MQTT API reference](https://thingsboard.io/docs/reference/mqtt-api/). 
+#### Sensor tempertatura lm25dz
 
-Cada dispositivo criado no Thingsboard deverá ser configurado com o tipo de transporte (`Tranport Type`) MQTT. A conexão MQTT cujos tópicos para envio de dados são:
+<img src=img/lm35dz.jpg  width="300" height="300">
 
-- Telemetria: `v1/devices/me/telemetry`
-- Atributos: `v1/devices/me/attributes`
+#### Sensor Photo Interruptor
 
-O envio e recebimento de comandos deverá ser realizado através de **Remote Procedure Calls (RPC)**, com a documentação descrita na API. Em resumo, o cliente deve se inscrever no tópido `v1/devices/me/rpc/request/+` e irá receber cada comando em um subtópico com `ID` único em `v1/devices/me/rpc/response/$request_id`. Quanto necessário, a confirmação do comando deve ser retornada pelo mesmo tópico com o `ID` enviado (`v1/devices/me/rpc/response/$request_id`). O conteúdo de todas as mensagens será sempre no formato Json.
+<img src=img/photo_interruptor.jpg  width="300" height="300">
 
-#### **Cliente ESP32**:
+#### Sensor De Toque
 
-Haverão duas configurações possíveis dos clientes ESP32. A **ESP32-Energia** irá funcionar conectada permanentemente à alimentação e a **ESP32-Bateria** representa um dispositivo operado por baterias (que deve funcionar em modo Low Power). **Atenção**! O firmware para as duas variações deverá ser o mesmo e a opção de funcionamento por um modo ou outro deverá ser definida através de uma variável de ambiente no ***menuconfig***.
+<img src=img/sensor_toque.jpg  width="300" height="300">
 
-1. O código da ESP32 deve ser desenvolvido em C utilizando o framework ESP-IDF (Deve ser indicado no README a versão do framework utilizada para o desenvolvimento e se foi feito usando a ESP-IDF nativa ou via PlatformIO);
-2. A ESP32 deverá se conectar via Wifi (com as credenciais sendo definidas em variável de ambiente pelo Menuconfig);
-3. Cada cliente ESP32, ao ser iniciado pela primeira vez, deve:  
-    3.1 Inicializar o serviço MQTT e conectar ao broker com o token de acesso do dispositivo;  
-    3.2 Se inscrever no tópico `v1/devices/me/rpc/request/+` para receber comandos remotos;  
-    3.3 Enviar telemetria e atributos pelos respectivos tópicos da API;  
-
-4. Armazenar o estado dos atributos (estado das saídas) em caso de reinicio do dispositivo por falta de energia. A informação de estado deve ser armzenada na memória não volátil (NVS).
-5. Realizar telemetria dos sensores selecionados e atualização do dashboard de maneira periódica (no mínimo a cada 1 segundo);
-6. Monitorar o botão utilizando interrupções e enviar por mensagem push a cada mudança do estado do botão;
-7. Acionar saídas como o LED, dentre outras, à partir dos comandos RPC enviados pelo Dashboard de maneira dimerizável, sua intensidade sendo controlada à partir da técnica de PWM;
 
 ## Apresentação
 
