@@ -76,9 +76,9 @@ Para as regras de funcionamento da serra circular ficaram estabelecidas as segui
 
 ## Imagens do Sistema
 
-![Dashboard](imagens/dashboard.png)
+![Dashboard](img/dashboard.png)
 
-![Placa](imagens/Placa.jpg)
+![Placa](img/Placa.jpg)
 
 ## 7. Referências
 
